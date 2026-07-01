@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Hawkline × Daycycle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1F3B; --slate:#2E3454;
+    --amber:#E8A33D; --paper:#F5F3EE;
+    --teal:#4C8C8C;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%; overflow:hidden;}
+  body{
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:color 2s ease;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600;}
+
+  /* SKY */
+  #sky{
+    position:fixed; inset:0; z-index:0;
+    transition:background 4s ease;
+  }
+
+  /* STARS */
+  #stars{position:fixed; inset:0; z-index:1; pointer-events:none; opacity:0; transition:opacity 3s ease;}
+  .star{position:absolute; background:#fff; border-radius:50%; animation:twinkle 3s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.2;}50%{opacity:1;}}
+
+  /* CELESTIAL */
+  #celestial{
+    position:fixed; border-radius:50%; z-index:2; pointer-events:none;
+    transition:left 4s ease, top 4s ease, background 4s ease, box-shadow 4s ease, width 4s ease, height 4s ease;
+  }
+
+  /* CLOUDS */
+  #clouds{position:fixed; inset:0; z-index:3; pointer-events:none; overflow:hidden;}
+  .cloud{
+    position:absolute; background:rgba(255,255,255,0.18); border-radius:50px;
+    filter:blur(12px); animation:drift linear infinite;
+  }
+  @keyframes drift{from{transform:translateX(-200px);}to{transform:translateX(calc(100vw + 200px));}}
+
+  /* RAIN */
+  #rain{position:fixed; inset:0; z-index:4; pointer-events:none; overflow:hidden; opacity:0; transition:opacity 1.5s ease;}
+  .drop{
+    position:absolute; top:-20px; width:1.5px; border-radius:2px;
+    background:linear-gradient(to bottom, transparent, rgba(174,214,241,0.7));
+    animation:fall linear infinite;
+  }
+  @keyframes fall{to{transform:translateY(110vh);}}
+
+  /* LIGHTNING */
+  #lightning{
+    position:fixed; inset:0; z-index:5; pointer-events:none;
+    background:rgba(255,255,255,0); transition:background 0.05s;
+  }
+  #bolt{
+    position:fixed; z-index:6; pointer-events:none; opacity:0;
+    filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 30px #a0c4ff);
+  }
+
+  /* RIDGE */
+  #ridge{position:fixed; bottom:0; left:0; width:100%; z-index:7; pointer-events:none;}
+  #ridge svg{width:100%; display:block;}
+
+  /* LAYOUT */
+  .screen{
+    position:fixed; inset:0; z-index:10;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    transition:opacity 0.6s ease;
+  }
+  .screen.hidden{opacity:0; pointer-events:none;}
+
+  /* CLOCK */
+  #clock{
+    position:fixed; top:24px; right:32px; z-index:20;
+    font-family:'JetBrains Mono',monospace; font-size:0.85rem;
+    padding:8px 14px; border-radius:20px;
+    background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+    transition:color 2s ease;
+  }
+
+  /* BRAND TOP LEFT */
+  #topBrand{
+    position:fixed; top:24px; left:32px; z-index:20;
+    font-family:'Fraunces',serif; font-weight:700; font-size:1.1rem;
+    display:flex; align-items:center; gap:8px;
+    padding:8px 14px; border-radius:20px;
+    background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+    transition:color 2s ease;
+  }
+
+  /* LOGIN CARD */
+  .card{
+    width:100%; max-width:400px;
+    padding:44px 40px;
+    border-radius:6px;
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.2);
+    transition:background 2s ease, box-shadow 2s ease;
+  }
+  .card.day{ background:rgba(255,255,255,0.38); box-shadow:0 20px 60px rgba(0,0,0,0.1);}
+  .card.night{ background:rgba(10,12,30,0.55); box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:0.73rem;
+    text-transform:uppercase; letter-spacing:0.14em; margin-bottom:14px;
+    transition:color 2s ease;
+  }
+  .card h1{font-size:1.9rem; margin-bottom:6px; transition:color 2s ease;}
+  .sub{font-size:0.88rem; margin-bottom:28px; transition:color 2s ease; opacity:0.75;}
+
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:0.78rem; font-weight:600; margin-bottom:7px; transition:color 2s ease;}
+  .field input{
+    width:100%; padding:12px 14px; border-radius:4px; font-size:0.95rem;
+    border:1px solid rgba(255,255,255,0.3); outline:none;
+    background:rgba(255,255,255,0.18); backdrop-filter:blur(4px);
+    font-family:'Inter',sans-serif; transition:border-color 0.2s ease, color 2s ease, background 2s ease;
+  }
+  .field input::placeholder{opacity:0.5;}
+  .field input:focus{border-color:var(--amber);}
+
+  .weather-badge{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:'JetBrains Mono',monospace; font-size:0.74rem;
+    padding:5px 12px; border-radius:20px; margin-bottom:22px;
+    background:rgba(255,255,255,0.15); transition:color 2s ease;
+  }
+
+  .btn{
+    width:100%; padding:13px; border:none; border-radius:4px;
+    font-weight:700; font-size:0.95rem; cursor:pointer; margin-top:6px;
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(135deg, var(--amber), var(--teal));
+    color:#fff; letter-spacing:0.02em;
+    transition:transform 0.2s ease, opacity 0.2s ease;
+  }
+  .btn:hover{transform:translateY(-1px); opacity:0.92;}
+  .msg{
+    font-family:'JetBrains Mono',monospace; font-size:0.78rem;
+    margin-top:14px; min-height:18px; text-align:center; transition:color 2s ease;
+  }
+  .msg.error{color:#FF6B6B;}
+  .msg.ok{color:#4ECDC4;}
+
+  /* DASHBOARD */
+  #dashboard{overflow-y:auto; padding:80px 32px 40px; align-items:flex-start; flex-direction:column;}
+  .dash-header{width:100%; max-width:1100px; margin:0 auto 36px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+  .dash-header h2{font-size:2rem; transition:color 2s ease;}
+  .logout-btn{
+    padding:9px 20px; border-radius:4px; font-size:0.85rem; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.15); backdrop-filter:blur(6px); font-family:'Inter',sans-serif;
+    transition:background 0.2s ease, color 2s ease;
+  }
+  .logout-btn:hover{background:rgba(255,255,255,0.25);}
+  .dash-grid{width:100%; max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(2,1fr); gap:20px;}
+  @media(max-width:720px){.dash-grid{grid-template-columns:1fr;}}
+
+  .dash-card{
+    padding:30px; border-radius:6px; backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.15);
+    transition:background 2s ease, color 2s ease;
+  }
+  .dash-card.day{background:rgba(255,255,255,0.35);}
+  .dash-card.night{background:rgba(10,12,30,0.5);}
+  .dash-card h3{font-size:1.15rem; margin-bottom:16px; display:flex; align-items:center; gap:8px; transition:color 2s ease;}
+  .stat-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.1);}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-row span:first-child{font-size:0.85rem; opacity:0.7;}
+  .stat-row span:last-child{font-family:'JetBrains Mono',monospace; font-size:0.9rem; font-weight:600;}
+  .tag{
+    display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.72rem;
+    font-family:'JetBrains Mono',monospace; font-weight:500;
+  }
+  .tag.green{background:rgba(78,205,196,0.2); color:#4ECDC4;}
+  .tag.amber{background:rgba(232,163,61,0.2); color:var(--amber);}
+  .tag.red{background:rgba(255,107,107,0.2); color:#FF6B6B;}
+
+  /* WEATHER LABEL */
+  #weatherLabel{
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+    z-index:20; font-family:'JetBrains Mono',monospace; font-size:0.78rem;
+    padding:6px 16px; border-radius:20px;
+    background:rgba(255,255,255,0.15); backdrop-filter:blur(8px);
+    transition:color 2s ease; white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="stars"></div>
+<div id="celestial"></div>
+<div id="clouds"></div>
+<div id="rain"></div>
+<div id="lightning"></div>
+<svg id="bolt" width="80" height="200" viewBox="0 0 80 200">
+  <polyline points="50,0 20,90 45,90 10,200" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+<div id="ridge"><svg viewBox="0 0 1440 200" preserveAspectRatio="none">
+  <path id="ridgePath" d="M0 120 C 200 70, 400 150, 600 90 C 800 40, 1000 110, 1200 80 C 1320 60, 1400 90, 1440 100 L1440 200 L0 200 Z"/>
+</svg></div>
+
+<div id="clock" class="mono">--:-- --</div>
+<div id="topBrand">
+  <svg viewBox="0 0 200 200" width="20" height="20" style="border-radius:50%;">
+    <defs>
+      <linearGradient id="bLogo" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#2E3454"/>
+        <stop offset="75%" stop-color="#E8A33D"/>
+        <stop offset="100%" stop-color="#F2C879"/>
+      </linearGradient>
+    </defs>
+    <circle cx="100" cy="100" r="96" fill="url(#bLogo)"/>
+    <circle cx="100" cy="128" r="28" fill="#FBDDA0" opacity="0.9"/>
+    <g fill="#1B1F3B">
+      <path d="M100 70 C 86 64, 60 58, 30 66 C 50 70, 64 76, 74 84 C 56 84, 34 90, 14 102 C 38 100, 58 102, 72 110 C 60 116, 46 126, 38 140 C 56 130, 72 122, 84 120 C 90 124, 96 128, 100 136 C 104 128, 110 124, 116 120 C 128 122, 144 130, 162 140 C 154 126, 140 116, 128 110 C 142 102, 162 100, 186 102 C 166 90, 144 84, 126 84 C 136 76, 150 70, 170 66 C 140 58, 114 64, 100 70 Z"/>
+    </g>
+  </svg>
+  Hawkline × Daycycle
+</div>
+<div id="weatherLabel">⏳ Reading local time…</div>
+
+<!-- LOGIN SCREEN -->
+<div class="screen" id="loginScreen">
+  <div class="card day" id="loginCard">
+    <div class="eyebrow" id="loginEyebrow">● ADMIN PORTAL</div>
+    <h1 id="loginTitle">Sign in</h1>
+    <p class="sub" id="loginSub">Access the Hawkline × Daycycle control panel</p>
+    <div class="weather-badge" id="weatherBadge">⏳ Detecting…</div>
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="admin" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••">
+    </div>
+    <button class="btn" onclick="doLogin()">Sign in to Admin</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD SCREEN -->
+<div class="screen hidden" id="dashScreen" style="overflow-y:auto; align-items:flex-start; flex-direction:column;">
+  <div style="width:100%; max-width:1100px; margin:0 auto; padding-top:20px;">
+    <div class="dash-header">
+      <div>
+        <div class="eyebrow" id="dashEyebrow" style="margin-bottom:6px;">● ADMIN DASHBOARD</div>
+        <h2 id="dashTitle">Welcome back, Admin</h2>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+    <div class="dash-grid">
+
+      <!-- Hawkline card -->
+      <div class="dash-card day" id="dcHawk">
+        <h3>🦅 Hawkline Express</h3>
+        <div class="stat-row"><span>Site status</span><span><span class="tag green">Live</span></span></div>
+        <div class="stat-row"><span>Active shipments</span><span>4,821</span></div>
+        <div class="stat-row"><span>On-time rate</span><span>99.1%</span></div>
+        <div class="stat-row"><span>Open support tickets</span><span>14</span></div>
+        <div class="stat-row"><span>Last deploy</span><span>Today</span></div>
+      </div>
+
+      <!-- Daycycle card -->
+      <div class="dash-card day" id="dcDay">
+        <h3>🌅 Daycycle</h3>
+        <div class="stat-row"><span>Site status</span><span><span class="tag green">Live</span></span></div>
+        <div class="stat-row"><span>Visitors today</span><span>1,240</span></div>
+        <div class="stat-row"><span>Avg. session</span><span>3m 12s</span></div>
+        <div class="stat-row"><span>Slider interactions</span><span>6,088</span></div>
+        <div class="stat-row"><span>Last deploy</span><span>Today</span></div>
+      </div>
+
+      <!-- Weather / Sky card -->
+      <div class="dash-card day" id="dcWeather">
+        <h3>🌦 Sky Engine — Live</h3>
+        <div class="stat-row"><span>Current sky</span><span id="dashSkyLabel">—</span></div>
+        <div class="stat-row"><span>Local time</span><span id="dashTime">—</span></div>
+        <div class="stat-row"><span>Weather effect</span><span id="dashWeather">—</span></div>
+        <div class="stat-row"><span>Celestial body</span><span id="dashCelestial">—</span></div>
+      </div>
+
+      <!-- System card -->
+      <div class="dash-card day" id="dcSystem">
+        <h3>⚙️ System</h3>
+        <div class="stat-row"><span>Admin logged in</span><span id="dashLoggedTime">—</span></div>
+        <div class="stat-row"><span>Vercel build</span><span><span class="tag green">Passed</span></span></div>
+        <div class="stat-row"><span>GitHub sync</span><span><span class="tag green">In sync</span></span></div>
+        <div class="stat-row"><span>API health</span><span><span class="tag amber">Demo mode</span></span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DEMO CREDENTIALS ──────────────────────────────
+const CREDS = { username:'admin', password:'hawkline2026' };
+let loginTime = null;
+
+// ── TIME ──────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0'); }
+function getTimeLabel(h){
+  if(h>=5&&h<8)  return {label:'Sunrise',phase:'dawn',icon:'🌅'};
+  if(h>=8&&h<12) return {label:'Morning',phase:'day',icon:'☀️'};
+  if(h>=12&&h<16)return {label:'Afternoon',phase:'day',icon:'🌤'};
+  if(h>=16&&h<19)return {label:'Golden Hour',phase:'golden',icon:'🌇'};
+  if(h>=19&&h<21)return {label:'Dusk',phase:'dusk',icon:'🌆'};
+  if(h>=21||h<5) return {label:'Night',phase:'night',icon:'🌙'};
+  return {label:'Day',phase:'day',icon:'☀️'};
+}
+
+// Random weather: sometimes rain, sometimes thunder during night/dusk
+function getWeather(phase){
+  const roll = Math.random();
+  if(phase==='night' && roll<0.4) return 'thunder';
+  if((phase==='dusk'||phase==='dawn') && roll<0.3) return 'rain';
+  if(phase==='day' && roll<0.15) return 'rain';
+  return 'clear';
+}
+
+let currentWeather = 'clear';
+let currentPhase = 'day';
+
+// ── SKY STATES ────────────────────────────────────
+const skyStates = {
+  dawn:   { sky:'linear-gradient(180deg,#1B1F3B 0%,#9A5B6E 40%,#FFB36B 75%,#F2C879 100%)', text:'#F5F3EE', accent:'#FFB36B' },
+  day:    { sky:'linear-gradient(180deg,#5FB6E0 0%,#9FD3F2 50%,#BFE3F2 100%)', text:'#1B1F3B', accent:'#0E6BA8' },
+  golden: { sky:'linear-gradient(180deg,#C7603A 0%,#E8A33D 50%,#F2C879 100%)', text:'#1B1F3B', accent:'#E8A33D' },
+  dusk:   { sky:'linear-gradient(180deg,#2E3454 0%,#5C5470 50%,#8C6E8C 100%)', text:'#F5F3EE', accent:'#8C6E8C' },
+  night:  { sky:'linear-gradient(180deg,#05060F 0%,#0B0E1F 60%,#1B1F3B 100%)', text:'#E8E6F0', accent:'#8FA3E0' },
+};
+
+const ridgeColors = { dawn:'#1B1F3B', day:'#2E3454', golden:'#1B1F3B', dusk:'#0D1024', night:'#05060F' };
+
+// ── DOM REFS ─────────────────────────────────────
+const sky = document.getElementById('sky');
+const stars = document.getElementById('stars');
+const celestial = document.getElementById('celestial');
+const rain = document.getElementById('rain');
+const lightning = document.getElementById('lightning');
+const bolt = document.getElementById('bolt');
+const ridgePath = document.getElementById('ridgePath');
+const clock = document.getElementById('clock');
+const weatherLabel = document.getElementById('weatherLabel');
+const loginCard = document.getElementById('loginCard');
+const topBrand = document.getElementById('topBrand');
+
+// ── STARS ─────────────────────────────────────────
+for(let i=0;i<70;i++){
+  const s=document.createElement('div'); s.className='star';
+  const size=Math.random()*2+0.5;
+  s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*70}%;left:${Math.random()*100}%;animation-delay:${Math.random()*4}s;`;
+  stars.appendChild(s);
+}
+
+// ── CLOUDS ───────────────────────────────────────
+const cloudsEl = document.getElementById('clouds');
+[
+  {w:180,h:40,top:8,dur:60},
+  {w:260,h:55,top:18,dur:90},
+  {w:140,h:35,top:12,dur:45},
+  {w:200,h:50,top:25,dur:75},
+].forEach(c=>{
+  const el=document.createElement('div'); el.className='cloud';
+  el.style.cssText=`width:${c.w}px;height:${c.h}px;top:${c.top}%;left:-200px;animation-duration:${c.dur}s;animation-delay:${Math.random()*-c.dur}s;`;
+  cloudsEl.appendChild(el);
+});
+
+// ── RAIN ─────────────────────────────────────────
+for(let i=0;i<80;i++){
+  const d=document.createElement('div'); d.className='drop';
+  const h=Math.random()*60+30;
+  d.style.cssText=`left:${Math.random()*100}%;height:${h}px;animation-duration:${Math.random()*0.4+0.5}s;animation-delay:${Math.random()*1.5}s;`;
+  rain.appendChild(d);
+}
+
+// ── LIGHTNING ────────────────────────────────────
+function flashLightning(){
+  const x = Math.random()*80+10;
+  bolt.style.left = x+'%';
+  bolt.style.top = '5%';
+  bolt.style.opacity = '1';
+  lightning.style.background = 'rgba(255,255,255,0.18)';
+  setTimeout(()=>{ bolt.style.opacity='0'; lightning.style.background='rgba(255,255,255,0)'; },120);
+}
+let lightningInterval = null;
+
+// ── APPLY SKY ────────────────────────────────────
+function applySky(phase, weather){
+  const state = skyStates[phase] || skyStates.day;
+  sky.style.background = state.sky;
+  document.body.style.color = state.text;
+
+  // stars
+  stars.style.opacity = (phase==='night'||phase==='dusk') ? (phase==='night'?'1':'0.4') : '0';
+
+  // celestial
+  const now = new Date(); const h=now.getHours(); const m=now.getMinutes();
+  const frac = ((h%12)*60+m)/(12*60); // 0-1 within 12-hr arc
+  const arcX = 10 + frac*80;
+  const arcY = 65 - Math.sin(frac*Math.PI)*50;
+  celestial.style.left = arcX+'%';
+  celestial.style.top  = arcY+'%';
+  const isNight = (phase==='night'||phase==='dusk');
+  celestial.style.width = isNight?'46px':'62px';
+  celestial.style.height= isNight?'46px':'62px';
+  if(isNight){
+    celestial.style.background='#F2EDE4';
+    celestial.style.boxShadow='0 0 50px rgba(242,237,228,0.5)';
+  } else {
+    celestial.style.background='radial-gradient(circle,#FFF7E0,#FFD27A)';
+    celestial.style.boxShadow='0 0 70px rgba(255,210,122,0.7)';
+  }
+
+  // ridge
+  ridgePath.setAttribute('fill', ridgeColors[phase]||'#1B1F3B');
+
+  // cloud opacity
+  const cloudOpacity = weather==='clear'?'0.35':'0.6';
+  cloudsEl.style.opacity = cloudOpacity;
+
+  // rain
+  rain.style.opacity = (weather==='rain'||weather==='thunder')?'1':'0';
+
+  // lightning
+  if(weather==='thunder'){
+    if(!lightningInterval){
+      lightningInterval = setInterval(()=>{
+        if(Math.random()>0.65) flashLightning();
+      }, 2000);
+    }
+  } else {
+    if(lightningInterval){ clearInterval(lightningInterval); lightningInterval=null; }
+    bolt.style.opacity='0';
+    lightning.style.background='rgba(255,255,255,0)';
+  }
+
+  // card mode
+  const mode = (phase==='night'||phase==='dusk') ? 'night' : 'day';
+  [loginCard].forEach(el=>{
+    if(el){ el.classList.toggle('night', mode==='night'); el.classList.toggle('day', mode==='day'); }
+  });
+  ['dcHawk','dcDay','dcWeather','dcSystem'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.classList.toggle('night', mode==='night'); el.classList.toggle('day', mode==='day'); }
+  });
+
+  // input color
+  document.querySelectorAll('.field input').forEach(i=>{
+    i.style.color = state.text;
+    i.style.background = mode==='night'?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.28)';
+  });
+  topBrand.style.color = state.text;
+  clock.style.color = state.text;
+  weatherLabel.style.color = state.text;
+  document.querySelectorAll('.eyebrow,.sub,label,.stat-row,.logout-btn,.dash-header h2,.dash-card h3,.msg').forEach(el=>{
+    el.style.color = state.text;
+  });
+  document.querySelector('#loginTitle').style.color = state.text;
+
+  // weather label
+  const wIcon = weather==='thunder'?'⛈ Thunderstorm':weather==='rain'?'🌧 Rain':'';
+  const tInfo = getTimeLabel(new Date().getHours());
+  weatherLabel.textContent = `${tInfo.icon} ${tInfo.label}${wIcon?' · '+wIcon:''}`;
+
+  // dashboard live stats
+  document.getElementById('dashSkyLabel').textContent = tInfo.label;
+  document.getElementById('dashWeather').textContent = wIcon||'Clear';
+  document.getElementById('dashCelestial').textContent = isNight?'🌙 Moon':'☀️ Sun';
+}
+
+// ── TICK ─────────────────────────────────────────
+function tick(){
+  const now = new Date();
+  const h=now.getHours(), m=now.getMinutes(), s=now.getSeconds();
+  const ampm = h>=12?'PM':'AM'; const h12=h%12||12;
+  clock.textContent = `${pad(h12)}:${pad(m)}:${pad(s)} ${ampm}`;
+  document.getElementById('dashTime').textContent = `${pad(h12)}:${pad(m)} ${ampm}`;
+
+  const tInfo = getTimeLabel(h);
+  const newPhase = tInfo.phase;
+
+  // re-roll weather every minute
+  if(s===0 || currentPhase!==newPhase){
+    currentWeather = getWeather(newPhase);
+    currentPhase = newPhase;
+    applySky(currentPhase, currentWeather);
+  }
+
+  // login time
+  if(loginTime){
+    const diff=Math.floor((now-loginTime)/1000);
+    const mins=Math.floor(diff/60), secs=diff%60;
+    document.getElementById('dashLoggedTime').textContent = `${pad(mins)}m ${pad(secs)}s`;
+  }
+}
+
+// ── AUTH ─────────────────────────────────────────
+function doLogin(){
+  const u=document.getElementById('username').value.trim();
+  const p=document.getElementById('password').value;
+  const msg=document.getElementById('loginMsg');
+  if(u===CREDS.username && p===CREDS.password){
+    msg.textContent='> Access granted — loading dashboard…';
+    msg.className='msg ok';
+    loginTime=new Date();
+    setTimeout(()=>{
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('dashScreen').classList.remove('hidden');
+    },800);
+  } else {
+    msg.textContent='> Invalid credentials. Try: admin / hawkline2026';
+    msg.className='msg error';
+    document.getElementById('loginCard').style.animation='shake 0.3s ease';
+    setTimeout(()=>document.getElementById('loginCard').style.animation='',400);
+  }
+}
+
+function doLogout(){
+  loginTime=null;
+  document.getElementById('username').value='';
+  document.getElementById('password').value='';
+  document.getElementById('loginMsg').textContent='';
+  document.getElementById('dashScreen').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+}
+
+document.getElementById('password').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('username').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('password').focus(); });
+
+// ── INIT ─────────────────────────────────────────
+(function init(){
+  const h=new Date().getHours();
+  const tInfo=getTimeLabel(h);
+  currentPhase=tInfo.phase;
+  currentWeather=getWeather(currentPhase);
+  applySky(currentPhase,currentWeather);
+  tick();
+  setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
