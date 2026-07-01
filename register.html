@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — Hawkline Express</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1F3B; --slate:#2E3454;
+    --amber:#E8A33D; --paper:#F5F3EE;
+    --teal:#4C8C8C;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{min-height:100%;}
+  body{
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:color 2s ease;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  h1,h2{font-family:'Fraunces',serif; font-weight:600;}
+  a{color:inherit; text-decoration:none;}
+
+  /* SKY */
+  #sky{position:fixed;inset:0;z-index:0;transition:background 4s ease;}
+  #stars{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity 3s ease;}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 3s ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.2;}50%{opacity:1;}}
+  #celestial{position:fixed;border-radius:50%;z-index:2;pointer-events:none;transition:left 4s ease,top 4s ease,background 4s ease,box-shadow 4s ease,width 4s ease,height 4s ease;}
+  #clouds{position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden;}
+  .cloud{position:absolute;background:rgba(255,255,255,0.18);border-radius:50px;filter:blur(12px);animation:drift linear infinite;}
+  @keyframes drift{from{transform:translateX(-200px);}to{transform:translateX(calc(100vw + 200px));}}
+  #rain{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1.5s ease;}
+  .drop{position:absolute;top:-20px;width:1.5px;border-radius:2px;background:linear-gradient(to bottom,transparent,rgba(174,214,241,0.7));animation:fall linear infinite;}
+  @keyframes fall{to{transform:translateY(110vh);}}
+  #lightning{position:fixed;inset:0;z-index:5;pointer-events:none;background:rgba(255,255,255,0);transition:background 0.05s;}
+  #bolt{position:fixed;z-index:6;pointer-events:none;opacity:0;filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 30px #a0c4ff);}
+  #ridge{position:fixed;bottom:0;left:0;width:100%;z-index:7;pointer-events:none;}
+  #ridge svg{width:100%;display:block;}
+
+  /* HEADER */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 32px;
+  }
+  .brand{
+    font-family:'Fraunces',serif;font-weight:700;font-size:1.1rem;
+    display:flex;align-items:center;gap:8px;
+    padding:8px 14px;border-radius:20px;
+    background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);
+    transition:color 2s ease;
+  }
+  #clock{
+    font-family:'JetBrains Mono',monospace;font-size:0.82rem;
+    padding:8px 14px;border-radius:20px;
+    background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);
+    transition:color 2s ease;
+  }
+  #weatherLabel{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    z-index:20;font-family:'JetBrains Mono',monospace;font-size:0.78rem;
+    padding:6px 16px;border-radius:20px;
+    background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);
+    transition:color 2s ease;white-space:nowrap;
+  }
+
+  /* PAGE LAYOUT */
+  .page{
+    position:relative;z-index:10;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:100px 24px 80px;
+  }
+
+  /* CARD */
+  .card{
+    width:100%;max-width:460px;
+    padding:44px 40px;border-radius:6px;
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.2);
+    transition:background 2s ease,box-shadow 2s ease;
+  }
+  .card.day{background:rgba(255,255,255,0.38);box-shadow:0 20px 60px rgba(0,0,0,0.1);}
+  .card.night{background:rgba(10,12,30,0.55);box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .card::before{
+    content:'';display:block;height:3px;
+    background:linear-gradient(90deg,var(--amber),var(--teal));
+    border-radius:3px;margin-bottom:32px;margin-top:-4px;
+    margin-left:-40px;margin-right:-40px;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:0.73rem;
+    text-transform:uppercase;letter-spacing:0.14em;margin-bottom:12px;
+    transition:color 2s ease;display:flex;align-items:center;gap:7px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);}
+  .card h1{font-size:1.9rem;margin-bottom:6px;transition:color 2s ease;}
+  .sub{font-size:0.88rem;margin-bottom:28px;opacity:0.75;transition:color 2s ease;}
+
+  /* FIELDS */
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:0.78rem;font-weight:600;margin-bottom:7px;transition:color 2s ease;}
+  .field input, .field select{
+    width:100%;padding:12px 14px;border-radius:4px;font-size:0.93rem;
+    border:1px solid rgba(255,255,255,0.3);outline:none;
+    background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);
+    font-family:'Inter',sans-serif;
+    transition:border-color 0.2s ease,color 2s ease,background 2s ease;
+    appearance:none;
+  }
+  .field input::placeholder{opacity:0.5;}
+  .field input:focus,.field select:focus{border-color:var(--amber);}
+
+  /* PASSWORD STRENGTH */
+  .strength-bar{
+    height:3px;border-radius:3px;margin-top:7px;
+    background:rgba(255,255,255,0.15);overflow:hidden;
+  }
+  .strength-fill{height:100%;width:0%;border-radius:3px;transition:width 0.3s ease,background 0.3s ease;}
+  .strength-label{font-family:'JetBrains Mono',monospace;font-size:0.7rem;margin-top:5px;transition:color 2s ease;opacity:0.7;}
+
+  /* TERMS */
+  .terms{
+    display:flex;align-items:flex-start;gap:10px;
+    font-size:0.83rem;margin-bottom:22px;transition:color 2s ease;opacity:0.85;
+  }
+  .terms input{width:15px;height:15px;margin-top:2px;accent-color:var(--teal);flex-shrink:0;}
+  .terms a{color:var(--amber);font-weight:600;}
+
+  /* BUTTON */
+  .btn{
+    width:100%;padding:14px;border:none;border-radius:4px;
+    font-weight:700;font-size:0.95rem;cursor:pointer;
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(135deg,var(--amber),var(--teal));
+    color:#fff;letter-spacing:0.02em;
+    transition:transform 0.2s ease,opacity 0.2s ease;
+  }
+  .btn:hover{transform:translateY(-1px);opacity:0.9;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+  .divider{
+    display:flex;align-items:center;gap:12px;
+    font-family:'JetBrains Mono',monospace;font-size:0.73rem;
+    margin:20px 0;opacity:0.5;
+  }
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.25);}
+
+  .signin-line{text-align:center;font-size:0.87rem;transition:color 2s ease;opacity:0.8;}
+  .signin-line a{color:var(--amber);font-weight:600;opacity:1;}
+
+  .msg{
+    font-family:'JetBrains Mono',monospace;font-size:0.78rem;
+    margin-top:14px;min-height:18px;text-align:center;transition:color 2s ease;
+  }
+  .msg.error{color:#FF6B6B;}
+  .msg.ok{color:#4ECDC4;}
+
+  /* SUCCESS STATE */
+  #successState{display:none;text-align:center;padding:20px 0;}
+  #successState .checkmark{font-size:3rem;margin-bottom:16px;}
+  #successState h2{font-size:1.6rem;margin-bottom:10px;transition:color 2s ease;}
+  #successState p{font-size:0.9rem;opacity:0.75;margin-bottom:24px;transition:color 2s ease;}
+  .btn-outline{
+    display:inline-block;padding:12px 28px;border-radius:4px;
+    border:1px solid rgba(255,255,255,0.35);font-weight:600;font-size:0.9rem;
+    cursor:pointer;background:transparent;font-family:'Inter',sans-serif;
+    transition:background 0.2s ease,color 2s ease;
+  }
+  .btn-outline:hover{background:rgba(255,255,255,0.15);}
+</style>
+</head>
+<body>
+
+<div id="sky"></div>
+<div id="stars"></div>
+<div id="celestial"></div>
+<div id="clouds"></div>
+<div id="rain"></div>
+<div id="lightning"></div>
+<svg id="bolt" width="80" height="200" viewBox="0 0 80 200">
+  <polyline points="50,0 20,90 45,90 10,200" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+<div id="ridge"><svg viewBox="0 0 1440 200" preserveAspectRatio="none">
+  <path id="ridgePath" d="M0 120 C 200 70, 400 150, 600 90 C 800 40, 1000 110, 1200 80 C 1320 60, 1400 90, 1440 100 L1440 200 L0 200 Z"/>
+</svg></div>
+
+<header>
+  <a href="login.html" class="brand" id="brandEl">
+    <svg viewBox="0 0 200 200" width="20" height="20" style="border-radius:50%;">
+      <defs>
+        <linearGradient id="bLogo" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#2E3454"/>
+          <stop offset="75%" stop-color="#E8A33D"/>
+          <stop offset="100%" stop-color="#F2C879"/>
+        </linearGradient>
+      </defs>
+      <circle cx="100" cy="100" r="96" fill="url(#bLogo)"/>
+      <circle cx="100" cy="128" r="28" fill="#FBDDA0" opacity="0.9"/>
+      <g fill="#1B1F3B">
+        <path d="M100 70 C 86 64, 60 58, 30 66 C 50 70, 64 76, 74 84 C 56 84, 34 90, 14 102 C 38 100, 58 102, 72 110 C 60 116, 46 126, 38 140 C 56 130, 72 122, 84 120 C 90 124, 96 128, 100 136 C 104 128, 110 124, 116 120 C 128 122, 144 130, 162 140 C 154 126, 140 116, 128 110 C 142 102, 162 100, 186 102 C 166 90, 144 84, 126 84 C 136 76, 150 70, 170 66 C 140 58, 114 64, 100 70 Z"/>
+      </g>
+    </svg>
+    Hawkline Express
+  </a>
+  <div id="clock">--:-- --</div>
+</header>
+
+<div id="weatherLabel">⏳ Reading local time…</div>
+
+<div class="page">
+  <div class="card day" id="mainCard">
+
+    <div id="formState">
+      <div class="eyebrow"><span class="dot"></span> NEW CUSTOMER</div>
+      <h1>Create account</h1>
+      <p class="sub">Ship smarter. Join thousands of Hawkline customers today.</p>
+
+      <div class="row">
+        <div class="field">
+          <label>First name</label>
+          <input type="text" id="fname" placeholder="Jane">
+        </div>
+        <div class="field">
+          <label>Last name</label>
+          <input type="text" id="lname" placeholder="Doe">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email address</label>
+        <input type="email" id="email" placeholder="jane@company.com">
+      </div>
+
+      <div class="field">
+        <label>Phone number</label>
+        <input type="tel" id="phone" placeholder="+1 (555) 000-0000">
+      </div>
+
+      <div class="field">
+        <label>Account type</label>
+        <select id="accountType">
+          <option value="">Select account type…</option>
+          <option value="personal">Personal</option>
+          <option value="business">Business</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Min. 8 characters" oninput="checkStrength(this.value)">
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel"></div>
+      </div>
+
+      <div class="field">
+        <label>Confirm password</label>
+        <input type="password" id="confirm" placeholder="Re-enter password">
+      </div>
+
+      <div class="terms">
+        <input type="checkbox" id="agree">
+        <label for="agree">I agree to Hawkline's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="doRegister()">Create my account</button>
+
+      <div class="msg" id="formMsg"></div>
+
+      <div class="divider">OR</div>
+      <p class="signin-line">Already have an account? <a href="login.html">Sign in</a></p>
+    </div>
+
+    <div id="successState">
+      <div class="checkmark">🦅</div>
+      <h2 id="successName">Welcome aboard!</h2>
+      <p>Your Hawkline account is ready. You can now track shipments, manage pickups, and view invoices.</p>
+      <button class="btn" onclick="window.location.href='login.html'" style="max-width:200px;margin:0 auto 12px;display:block;">Sign in now</button>
+      <button class="btn-outline" onclick="window.location.href='index.html'" id="backHome">Back to home</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── SKY ENGINE (same as admin) ──────────────────
+  const skyStates={
+    dawn:{sky:'linear-gradient(180deg,#1B1F3B 0%,#9A5B6E 40%,#FFB36B 75%,#F2C879 100%)',text:'#F5F3EE'},
+    day:{sky:'linear-gradient(180deg,#5FB6E0 0%,#9FD3F2 50%,#BFE3F2 100%)',text:'#1B1F3B'},
+    golden:{sky:'linear-gradient(180deg,#C7603A 0%,#E8A33D 50%,#F2C879 100%)',text:'#1B1F3B'},
+    dusk:{sky:'linear-gradient(180deg,#2E3454 0%,#5C5470 50%,#8C6E8C 100%)',text:'#F5F3EE'},
+    night:{sky:'linear-gradient(180deg,#05060F 0%,#0B0E1F 60%,#1B1F3B 100%)',text:'#E8E6F0'},
+  };
+  const ridgeColors={dawn:'#1B1F3B',day:'#2E3454',golden:'#1B1F3B',dusk:'#0D1024',night:'#05060F'};
+
+  function getPhase(h){
+    if(h>=5&&h<8) return 'dawn';
+    if(h>=8&&h<16) return 'day';
+    if(h>=16&&h<19) return 'golden';
+    if(h>=19&&h<21) return 'dusk';
+    return 'night';
+  }
+  function getWeather(phase){
+    const r=Math.random();
+    if(phase==='night'&&r<0.4) return 'thunder';
+    if((phase==='dusk'||phase==='dawn')&&r<0.3) return 'rain';
+    return 'clear';
+  }
+  function getTimeInfo(h){
+    const map={dawn:{label:'Sunrise',icon:'🌅'},day:{label:'Clear skies',icon:'☀️'},golden:{label:'Golden Hour',icon:'🌇'},dusk:{label:'Dusk',icon:'🌆'},night:{label:'Night',icon:'🌙'}};
+    return map[getPhase(h)]||map.day;
+  }
+
+  // stars
+  const starsEl=document.getElementById('stars');
+  for(let i=0;i<70;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2+0.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*70}%;left:${Math.random()*100}%;animation-delay:${Math.random()*4}s;`;
+    starsEl.appendChild(s);
+  }
+  // clouds
+  const cloudsEl=document.getElementById('clouds');
+  [{w:180,h:40,top:8,dur:60},{w:260,h:55,top:18,dur:90},{w:140,h:35,top:12,dur:45}].forEach(c=>{
+    const el=document.createElement('div');el.className='cloud';
+    el.style.cssText=`width:${c.w}px;height:${c.h}px;top:${c.top}%;left:-200px;animation-duration:${c.dur}s;animation-delay:${Math.random()*-c.dur}s;`;
+    cloudsEl.appendChild(el);
+  });
+  // rain drops
+  const rainEl=document.getElementById('rain');
+  for(let i=0;i<80;i++){
+    const d=document.createElement('div');d.className='drop';
+    const h=Math.random()*60+30;
+    d.style.cssText=`left:${Math.random()*100}%;height:${h}px;animation-duration:${Math.random()*0.4+0.5}s;animation-delay:${Math.random()*1.5}s;`;
+    rainEl.appendChild(d);
+  }
+  const bolt=document.getElementById('bolt');
+  const lightning=document.getElementById('lightning');
+  let ltInterval=null;
+  function flashLightning(){
+    bolt.style.left=Math.random()*80+10+'%';bolt.style.top='5%';bolt.style.opacity='1';
+    lightning.style.background='rgba(255,255,255,0.18)';
+    setTimeout(()=>{bolt.style.opacity='0';lightning.style.background='rgba(255,255,255,0)';},120);
+  }
+
+  let currentWeather='clear',currentPhase='day';
+
+  function applySky(phase,weather){
+    const st=skyStates[phase]||skyStates.day;
+    document.getElementById('sky').style.background=st.sky;
+    document.body.style.color=st.text;
+    starsEl.style.opacity=(phase==='night'||phase==='dusk')?(phase==='night'?'1':'0.4'):'0';
+    // celestial
+    const now=new Date();const frac=((now.getHours()%12)*60+now.getMinutes())/(12*60);
+    const cx=document.getElementById('celestial');
+    cx.style.left=(10+frac*80)+'%';cx.style.top=(65-Math.sin(frac*Math.PI)*50)+'%';
+    const isNight=(phase==='night'||phase==='dusk');
+    cx.style.width=isNight?'46px':'62px';cx.style.height=isNight?'46px':'62px';
+    cx.style.background=isNight?'#F2EDE4':'radial-gradient(circle,#FFF7E0,#FFD27A)';
+    cx.style.boxShadow=isNight?'0 0 50px rgba(242,237,228,0.5)':'0 0 70px rgba(255,210,122,0.7)';
+    document.getElementById('ridgePath').setAttribute('fill',ridgeColors[phase]||'#1B1F3B');
+    rainEl.style.opacity=(weather==='rain'||weather==='thunder')?'1':'0';
+    if(weather==='thunder'){if(!ltInterval)ltInterval=setInterval(()=>{if(Math.random()>0.65)flashLightning();},2000);}
+    else{if(ltInterval){clearInterval(ltInterval);ltInterval=null;}bolt.style.opacity='0';lightning.style.background='rgba(255,255,255,0)';}
+    const mode=(phase==='night'||phase==='dusk')?'night':'day';
+    const card=document.getElementById('mainCard');
+    card.classList.toggle('night',mode==='night');card.classList.toggle('day',mode==='day');
+    document.querySelectorAll('.field input,.field select').forEach(el=>{
+      el.style.color=st.text;
+      el.style.background=mode==='night'?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.25)';
+    });
+    ['brandEl','clock'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.color=st.text;});
+    document.getElementById('weatherLabel').style.color=st.text;
+    document.querySelectorAll('.btn-outline').forEach(el=>el.style.color=st.text);
+    const wIcon=weather==='thunder'?'⛈ Thunderstorm':weather==='rain'?'🌧 Rain':'';
+    const ti=getTimeInfo(new Date().getHours());
+    document.getElementById('weatherLabel').textContent=`${ti.icon} ${ti.label}${wIcon?' · '+wIcon:''}`;
+  }
+
+  function pad(n){return String(n).padStart(2,'0');}
+  function tick(){
+    const now=new Date();const h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
+    const ampm=h>=12?'PM':'AM';const h12=h%12||12;
+    document.getElementById('clock').textContent=`${pad(h12)}:${pad(m)}:${pad(s)} ${ampm}`;
+    const phase=getPhase(h);
+    if(s===0||phase!==currentPhase){currentWeather=getWeather(phase);currentPhase=phase;applySky(currentPhase,currentWeather);}
+  }
+
+  (function init(){
+    const h=new Date().getHours();currentPhase=getPhase(h);currentWeather=getWeather(currentPhase);
+    applySky(currentPhase,currentWeather);tick();setInterval(tick,1000);
+  })();
+
+  // ── PASSWORD STRENGTH ───────────────────────────
+  function checkStrength(val){
+    const fill=document.getElementById('strengthFill');
+    const label=document.getElementById('strengthLabel');
+    let score=0;
+    if(val.length>=8) score++;
+    if(/[A-Z]/.test(val)) score++;
+    if(/[0-9]/.test(val)) score++;
+    if(/[^A-Za-z0-9]/.test(val)) score++;
+    const levels=[
+      {w:'0%',c:'transparent',t:''},
+      {w:'25%',c:'#FF6B6B',t:'Weak'},
+      {w:'50%',c:'#FFB347',t:'Fair'},
+      {w:'75%',c:' #E8A33D',t:'Good'},
+      {w:'100%',c:'#4ECDC4',t:'Strong'},
+    ];
+    const lv=levels[score]||levels[0];
+    fill.style.width=lv.w;fill.style.background=lv.c;label.textContent=lv.t;
+  }
+
+  // ── REGISTER ────────────────────────────────────
+  function doRegister(){
+    const fname=document.getElementById('fname').value.trim();
+    const lname=document.getElementById('lname').value.trim();
+    const email=document.getElementById('email').value.trim();
+    const phone=document.getElementById('phone').value.trim();
+    const type=document.getElementById('accountType').value;
+    const pass=document.getElementById('password').value;
+    const conf=document.getElementById('confirm').value;
+    const agree=document.getElementById('agree').checked;
+    const msg=document.getElementById('formMsg');
+
+    if(!fname||!lname){msg.textContent='> Please enter your full name.';msg.className='msg error';return;}
+    if(!email||!email.includes('@')){msg.textContent='> Please enter a valid email address.';msg.className='msg error';return;}
+    if(!phone){msg.textContent='> Please enter a phone number.';msg.className='msg error';return;}
+    if(!type){msg.textContent='> Please select an account type.';msg.className='msg error';return;}
+    if(pass.length<8){msg.textContent='> Password must be at least 8 characters.';msg.className='msg error';return;}
+    if(pass!==conf){msg.textContent='> Passwords do not match.';msg.className='msg error';return;}
+    if(!agree){msg.textContent='> Please agree to the Terms of Service.';msg.className='msg error';return;}
+
+    msg.textContent='> Creating your account…';msg.className='msg ok';
+    setTimeout(()=>{
+      document.getElementById('formState').style.display='none';
+      const suc=document.getElementById('successState');
+      suc.style.display='block';
+      document.getElementById('successName').textContent=`Welcome, ${fname}!`;
+    },900);
+  }
+
+  document.getElementById('confirm').addEventListener('keydown',e=>{if(e.key==='Enter')doRegister();});
+</script>
+</body>
+</html>
